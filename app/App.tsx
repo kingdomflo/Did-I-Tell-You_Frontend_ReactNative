@@ -2,8 +2,8 @@ import React, { PureComponent } from 'react';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomePage from './HomePage';
-import RelationshipPage from './RelationshipPage';
+import HomePage from './pages/HomePage';
+import RelationshipPage from './pages/RelationshipPage';
 import {
   Button,
   StyleSheet,
