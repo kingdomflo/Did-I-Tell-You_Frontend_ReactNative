@@ -2,6 +2,8 @@ import React, { PureComponent } from 'react';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import AsyncStorage from '@react-native-community/async-storage';
+
 import HomePage from './pages/HomePage';
 import RelationshipPage from './pages/RelationshipPage';
 import {
@@ -31,9 +33,16 @@ export default class App extends PureComponent<Props, States> {
     this.state = {
       accessToken: null,
       offline: true,
-      currentLanguage: "fr",
-      acceptedLanguage: ["en", "fr", "no"] // will be nl, de, sw and fi later
+      currentLanguage: "en",
+      acceptedLanguage: ["en", "fr"] // will be no, nl, de, sw and fi later
     };
+
+    AsyncStorage.getItem('lang').then(data => {
+      console.log(data);
+      if (data) {
+        this._changeLang(data);
+      }
+    });
 
     console.log('Mock?', MOCK, 'Api URL?', API_URL);
   }
@@ -54,9 +63,12 @@ export default class App extends PureComponent<Props, States> {
     this.setState({ accessToken: 'todo', offline: true });
   }
 
-  _changeLang = (lang: string) => {
-    this.setState({ currentLanguage: lang });
-    i18n.locale = this.state.currentLanguage;
+  _changeLang = async (lang: string) => {
+    if (this.state.acceptedLanguage.includes(lang)) {
+      this.setState({ currentLanguage: lang });
+      i18n.locale = this.state.currentLanguage;
+      await AsyncStorage.setItem('lang', lang);
+    }
   }
 
   render() {
