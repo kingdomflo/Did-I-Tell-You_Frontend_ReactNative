@@ -1,0 +1,16 @@
+{
+  "General": {
+      "TitleApp": "DITY - Welcome!",
+      "HelloWorld": "Hello World",
+      "Wait": "Please wait",
+      "Login": "Login",
+      "OfflineMode": "Offline mode"
+  },
+  "Menu": {
+      "Home": "Home",
+      "Relationship": "Relationship"
+  },
+  "Relationship": {
+      "Name": "Name"
+  }
+}

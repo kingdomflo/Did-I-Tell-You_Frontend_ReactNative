@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { View, Text } from 'react-native';
+import i18n from "i18n-js";
 
 export interface Props { }
 export default class HomePage extends PureComponent<Props> {
@@ -11,7 +12,7 @@ export default class HomePage extends PureComponent<Props> {
   render() {
     return (
       <View>
-        <Text>Hello Home</Text>
+        <Text>{i18n.t('Menu.Home')}</Text>
       </View>
     )
   }
