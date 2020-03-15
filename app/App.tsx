@@ -18,6 +18,7 @@ import Auth0 from 'react-native-auth0';
 import i18n from "i18n-js";
 import en from "./i18n/en.json";
 import fr from "./i18n/fr.json";
+import SettingPage from './pages/SettingPage';
 
 const Tab = createBottomTabNavigator();
 
@@ -25,14 +26,13 @@ const credentials = require('../auth0-configuration');
 const auth0 = new Auth0(credentials);
 
 export interface Props { navigation: any };
-export interface States { accessToken: any, offline: boolean, currentLanguage: string, acceptedLanguage: string[] };
+export interface States { accessToken: any, currentLanguage: string, acceptedLanguage: string[] };
 export default class App extends PureComponent<Props, States> {
 
   constructor(props: any) {
     super(props);
     this.state = {
       accessToken: null,
-      offline: true,
       currentLanguage: "en",
       acceptedLanguage: ["en", "fr"] // will be no, nl, de, sw and fi later
     };
@@ -47,20 +47,26 @@ export default class App extends PureComponent<Props, States> {
     console.log('Mock?', MOCK, 'Api URL?', API_URL);
   }
 
-  _onLogin = () => {
+  _onLogin = async () => {
     auth0.webAuth
       .authorize({
-        scope: 'openid profile email'
+        scope: 'openid profile email offline_access'
       })
-      .then((credentials: any) => {
+      .then(async (credentials: any) => {
+        credentials.offline = false;
         console.log('someone is login', credentials);
-        this.setState({ accessToken: credentials.accessToken, offline: false });
+        await AsyncStorage.setItem('auth', JSON.stringify(credentials));
+        this.setState({ accessToken: credentials });
       })
       .catch((error: any) => console.log(error));
   };
 
-  _offlineMode = () => {
-    this.setState({ accessToken: 'todo', offline: true });
+  _offlineMode = async () => {
+    const fakeCredential = {
+      offline: true
+    }
+    await AsyncStorage.setItem('auth', JSON.stringify(fakeCredential));
+    this.setState({ accessToken: fakeCredential });
   }
 
   _changeLang = async (lang: string) => {
@@ -105,7 +111,10 @@ export default class App extends PureComponent<Props, States> {
                     : 'home';
                 } else if (route.name === 'Relationship') {
                   iconName = focused ? 'user' : 'user';
-                } else {
+                } else if (route.name === 'Setting') {
+                  iconName = focused ? 'settings' : 'settings';
+                }
+                else {
                   iconName = 'bookmark'
                 }
                 // You can return any component that you like here!
@@ -119,6 +128,7 @@ export default class App extends PureComponent<Props, States> {
           >
             <Tab.Screen name="Home" component={HomePage} options={{ tabBarLabel: i18n.t('Menu.Home') }} />
             <Tab.Screen name="Relationship" component={RelationshipPage} options={{ tabBarLabel: i18n.t('Menu.Relationship') }} />
+            <Tab.Screen name="Setting" component={SettingPage} options={{ tabBarLabel: i18n.t('Menu.Setting') }} />
           </Tab.Navigator>
         </NavigationContainer>
       );
