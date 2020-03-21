@@ -13,7 +13,6 @@ import {
   View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { MOCK, API_URL } from 'react-native-dotenv';
 import Auth0 from 'react-native-auth0';
 import i18n from "i18n-js";
 import en from "../i18n/en.json";
@@ -46,8 +45,6 @@ class IndexPage extends PureComponent<Props, States> {
         this._changeLang(data);
       }
     });
-
-    console.log('Mock?', MOCK, 'Api URL?', API_URL);
   }
 
   _onLogin = async () => {

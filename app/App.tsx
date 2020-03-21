@@ -1,18 +1,14 @@
 import React, { PureComponent } from 'react';
 import 'react-native-gesture-handler';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import AsyncStorage from '@react-native-community/async-storage';
 
 import { MOCK, API_URL } from 'react-native-dotenv';
-import Auth0 from 'react-native-auth0';
-import i18n from "i18n-js";
-import en from "./i18n/en.json";
-import fr from "./i18n/fr.json";
 
-import { Provider, connect } from 'react-redux';
+import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import storeReducer from './store';
 import Index from './pages/Index';
+
+import { openDatabase } from 'react-native-sqlite-storage';
 
 const store = createStore(storeReducer);
 
@@ -26,6 +22,46 @@ export default class App extends PureComponent<Props, States> {
     this.state = {
     };
     console.log('Mock?', MOCK, 'Api URL?', API_URL);
+  }
+
+  async componentDidMount() {
+
+    const db = await openDatabase({ name: 'Dity.db', location: 'default' });
+
+    await db.transaction((t) => {
+      t.executeSql(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='relationship'",
+        [],
+        (tr, res) => {
+          console.log('item:', res.rows);
+          if (res.rows.length === 0 || MOCK) {
+            t.executeSql('DROP TABLE IF EXISTS relationship', []);
+            t.executeSql(
+              'CREATE TABLE IF NOT EXISTS relationship(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), isSync BOOLEAN)',
+              []
+            );
+          }
+        }
+      );
+    });
+
+    // Init data in dev mode
+    if (MOCK) {
+      // Init relationship
+      await db.transaction((t) => {
+        t.executeSql(
+          'INSERT INTO relationship (name, isSync) VALUES (?, ?)',
+          ['Samy Gnu', false],
+        );
+      });
+      await db.transaction((t) => {
+        t.executeSql(
+          'INSERT INTO relationship (name, isSync) VALUES (?, ?)',
+          ['King Furry', false],
+        );
+      });
+    }
+
   }
 
   render() {
