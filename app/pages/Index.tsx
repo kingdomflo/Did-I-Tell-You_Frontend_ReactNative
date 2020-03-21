@@ -58,6 +58,7 @@ class IndexPage extends PureComponent<Props, States> {
         console.log('someone is login', credentials);
         this.props.login(credentials);
         await AsyncStorage.setItem('auth', JSON.stringify(credentials));
+        await AsyncStorage.setItem('online', JSON.stringify(true));
         this.setState({ accessToken: credentials });
       })
       .catch((error: any) => console.log(error));
@@ -70,6 +71,7 @@ class IndexPage extends PureComponent<Props, States> {
     }
     this.props.login(fakeCredential);
     await AsyncStorage.setItem('auth', JSON.stringify(fakeCredential));
+    await AsyncStorage.setItem('online', JSON.stringify(false));
     this.setState({ accessToken: fakeCredential });
   }
 

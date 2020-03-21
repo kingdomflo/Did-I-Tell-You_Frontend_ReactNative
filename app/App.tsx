@@ -30,14 +30,14 @@ export default class App extends PureComponent<Props, States> {
 
     await db.transaction((t) => {
       t.executeSql(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='relationship'",
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='relationships'",
         [],
         (tr, res) => {
           console.log('item:', res.rows);
           if (res.rows.length === 0 || MOCK) {
-            t.executeSql('DROP TABLE IF EXISTS relationship', []);
+            t.executeSql('DROP TABLE IF EXISTS relationships', []);
             t.executeSql(
-              'CREATE TABLE IF NOT EXISTS relationship(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), isSync BOOLEAN)',
+              'CREATE TABLE IF NOT EXISTS relationships(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), isSync BOOLEAN)',
               []
             );
           }
@@ -50,14 +50,14 @@ export default class App extends PureComponent<Props, States> {
       // Init relationship
       await db.transaction((t) => {
         t.executeSql(
-          'INSERT INTO relationship (name, isSync) VALUES (?, ?)',
-          ['Samy Gnu', false],
+          'INSERT INTO relationships (name, isSync) VALUES (?, ?)',
+          ['Samy Gnu', false]
         );
       });
       await db.transaction((t) => {
         t.executeSql(
-          'INSERT INTO relationship (name, isSync) VALUES (?, ?)',
-          ['King Furry', false],
+          'INSERT INTO relationships (name, isSync) VALUES (?, ?)',
+          ['King Furry', false]
         );
       });
     }
