@@ -15,8 +15,6 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Auth0 from 'react-native-auth0';
 import i18n from "i18n-js";
-import en from "../i18n/en.json";
-import fr from "../i18n/fr.json";
 import SettingPage from '../pages/SettingPage';
 
 import { connect } from 'react-redux';
@@ -27,24 +25,15 @@ const Tab = createBottomTabNavigator();
 const credentials = require('../../auth0-configuration');
 const auth0 = new Auth0(credentials);
 
-export interface Props { navigation: any, login(token: any): void, store: any };
-export interface States { accessToken: any, currentLanguage: string, acceptedLanguage: string[] };
+export interface Props { navigation: any, login(token: any): void, store: any, screenProps: any };
+export interface States { accessToken: any };
 export interface Props { }
 class IndexPage extends PureComponent<Props, States> {
   constructor(props: any) {
     super(props);
     this.state = {
       accessToken: null,
-      currentLanguage: "en",
-      acceptedLanguage: ["en", "fr"] // will be no, nl, de, sw and fi later
     };
-
-    AsyncStorage.getItem('lang').then(data => {
-      console.log(data);
-      if (data) {
-        this._changeLang(data);
-      }
-    });
   }
 
   _onLogin = async () => {
@@ -76,18 +65,13 @@ class IndexPage extends PureComponent<Props, States> {
   }
 
   _changeLang = async (lang: string) => {
-    if (this.state.acceptedLanguage.includes(lang)) {
-      this.setState({ currentLanguage: lang });
-      i18n.locale = this.state.currentLanguage;
-      await AsyncStorage.setItem('lang', lang);
-    }
+    this.props.screenProps.changeLanguage(lang);
   }
 
   render() {
-    i18n.locale = this.state.currentLanguage;
-    i18n.defaultLocale = "en";
-    i18n.fallbacks = true;
-    i18n.translations = { en, fr };
+    const screenProps = {
+      changeLanguage: this._changeLang
+    }
 
     return this.props.store.auth.connected === false ?
       (
@@ -127,6 +111,7 @@ class IndexPage extends PureComponent<Props, States> {
                 return <Icon name={iconName} size={size} color={color} />;
               },
             })}
+
             tabBarOptions={{
               activeTintColor: 'tomato',
               inactiveTintColor: 'gray',
@@ -134,7 +119,7 @@ class IndexPage extends PureComponent<Props, States> {
           >
             <Tab.Screen name="Home" component={HomePage} options={{ tabBarLabel: i18n.t('Menu.Home') }} />
             <Tab.Screen name="Relationship" component={RelationshipPage} options={{ tabBarLabel: i18n.t('Menu.Relationship') }} />
-            <Tab.Screen name="Setting" component={SettingPage} options={{ tabBarLabel: i18n.t('Menu.Setting') }} />
+            <Tab.Screen name="Setting" component={SettingPage} options={{ tabBarLabel: i18n.t('Menu.Setting') }} initialParams={screenProps} />
           </Tab.Navigator>
         </NavigationContainer>
       )

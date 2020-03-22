@@ -32,7 +32,6 @@ export default class RelationshipService {
             (tr: any, res: any) => {
               const temp = [];
               for (let i = 0; i < res.rows.length; ++i) {
-                console.log(res.rows.item(i));
                 temp.push(res.rows.item(i));
               }
               const toReturn = {

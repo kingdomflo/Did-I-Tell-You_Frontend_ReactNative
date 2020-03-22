@@ -1,16 +1,18 @@
 import React, { PureComponent } from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import i18n from "i18n-js";
 import RelationshipService from "../services/relationship.service";
 import { Relationship } from 'app/models/Relationship';
 
-export interface Props { }
+export interface Props { navigation: any }
 export default class RelationshipPage extends PureComponent<Props> {
   state = {
     relationshipList: Array<Relationship>(),
     isLoading: true,
     showModal: false
   }
+
+  _unsubscribe: any;
 
   relationshipService: RelationshipService;
 
@@ -21,6 +23,13 @@ export default class RelationshipPage extends PureComponent<Props> {
 
   componentDidMount() {
     this.getAllRelationship();
+    this._unsubscribe = this.props.navigation.addListener('focus', () => {
+      this.getAllRelationship();
+    });
+  }
+
+  componentWillUnmount() {
+    this._unsubscribe();
   }
 
   getAllRelationship() {
@@ -42,17 +51,37 @@ export default class RelationshipPage extends PureComponent<Props> {
       });
   }
 
+  listViewItemSeparator = () => {
+    return (
+      <View style={styles.relationshipSeparator} />
+    );
+  };
+
   render() {
     return (
       <View>
-        <Text>{i18n.t('Menu.Relationship')}</Text>
         <FlatList
           data={this.state.relationshipList}
+          ItemSeparatorComponent={this.listViewItemSeparator}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => <Text>{item.name}</Text>}
+          renderItem={({ item }) => <Text style={styles.relationship}>{item.name}</Text>}
         />
       </View>
     )
   }
 
 }
+
+const styles = StyleSheet.create({
+  relationshipSeparator: {
+    height: 0.2,
+    flex: 1,
+    backgroundColor: '#808080',
+    marginHorizontal: 20
+  },
+  relationship: {
+    textAlign: 'center',
+    paddingBottom: 20,
+    paddingTop: 20
+  }
+});
