@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -26,17 +26,12 @@ const credentials = require('../../auth0-configuration');
 const auth0 = new Auth0(credentials);
 
 export interface Props { navigation: any, login(token: any): void, store: any, screenProps: any };
-export interface States { accessToken: any };
-export interface Props { }
-class IndexPage extends PureComponent<Props, States> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      accessToken: null,
-    };
-  }
 
-  _onLogin = async () => {
+const IndexPage: FunctionComponent<Props> = props => {
+
+  const [accessToken, setAccessToken] = useState(null);
+
+  async function onLogin() {
     auth0.webAuth
       .authorize({
         scope: 'openid profile email offline_access'
@@ -45,87 +40,81 @@ class IndexPage extends PureComponent<Props, States> {
         credentials.offline = false;
         credentials.connected = true;
         console.log('someone is login', credentials);
-        this.props.login(credentials);
+        props.login(credentials);
         await AsyncStorage.setItem('auth', JSON.stringify(credentials));
         await AsyncStorage.setItem('online', JSON.stringify(true));
-        this.setState({ accessToken: credentials });
+        setAccessToken(credentials);
       })
       .catch((error: any) => console.log(error));
   };
 
-  _offlineMode = async () => {
-    const fakeCredential = {
+  async function offlineMode() {
+    const fakeCredential: any = {
       offline: true,
       connected: true
     }
-    this.props.login(fakeCredential);
+    props.login(fakeCredential);
     await AsyncStorage.setItem('auth', JSON.stringify(fakeCredential));
     await AsyncStorage.setItem('online', JSON.stringify(false));
-    this.setState({ accessToken: fakeCredential });
+    setAccessToken(fakeCredential);
   }
 
-  _changeLang = async (lang: string) => {
-    this.props.screenProps.changeLanguage(lang);
+  async function changeLang(lang: string) {
+    props.screenProps.changeLanguage(lang);
   }
 
-  render() {
-    const screenProps = {
-      changeLanguage: this._changeLang
-    }
+  return props.store.auth.connected === false ?
+    (
+      <View style={styles.container}>
+        <Text style={styles.header}> {i18n.t('General.TitleApp')}</Text>
+        <View style={styles.buttonContainer}>
+          <Button onPress={e => onLogin()}
+            title={i18n.t('General.Login')} />
+          <Button onPress={e => offlineMode()}
+            title={i18n.t('General.OfflineMode')} />
+        </View>
+        <View style={styles.langButtonContainer}>
+          <Button onPress={e => changeLang('fr')} title='FR' />
+          <Button onPress={e => changeLang('en')} title='EN' />
+        </View>
+      </View >
+    ) : (
+      <NavigationContainer>
+        <Tab.Navigator
+          // tslint:disable-next-line: jsx-no-lambda
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ focused, color, size }) => {
+              let iconName;
+              if (route.name === 'Home') {
+                iconName = focused
+                  ? 'home'
+                  : 'home';
+              } else if (route.name === 'Relationship') {
+                iconName = focused ? 'user' : 'user';
+              } else if (route.name === 'Setting') {
+                iconName = focused ? 'gear' : 'gear';
+              }
+              else {
+                iconName = 'bookmark'
+              }
+              // You can return any component that you like here!
+              return <Icon name={iconName} size={size} color={color} />;
+            },
+          })}
 
-    return this.props.store.auth.connected === false ?
-      (
-        <View style={styles.container}>
-          <Text style={styles.header}> {i18n.t('General.TitleApp')}</Text>
-          <View style={styles.buttonContainer}>
-            <Button onPress={this._onLogin}
-              title={i18n.t('General.Login')} />
-            <Button onPress={this._offlineMode}
-              title={i18n.t('General.OfflineMode')} />
-          </View>
-          <View style={styles.langButtonContainer}>
-            <Button onPress={this._changeLang.bind(this, 'fr')} title='FR' />
-            <Button onPress={this._changeLang.bind(this, 'en')} title='EN' />
-          </View>
-        </View >
-      ) : (
-        <NavigationContainer>
-          <Tab.Navigator
-            // tslint:disable-next-line: jsx-no-lambda
-            screenOptions={({ route }) => ({
-              tabBarIcon: ({ focused, color, size }) => {
-                let iconName;
-                if (route.name === 'Home') {
-                  iconName = focused
-                    ? 'home'
-                    : 'home';
-                } else if (route.name === 'Relationship') {
-                  iconName = focused ? 'user' : 'user';
-                } else if (route.name === 'Setting') {
-                  iconName = focused ? 'gear' : 'gear';
-                }
-                else {
-                  iconName = 'bookmark'
-                }
-                // You can return any component that you like here!
-                return <Icon name={iconName} size={size} color={color} />;
-              },
-            })}
+          tabBarOptions={{
+            activeTintColor: 'tomato',
+            inactiveTintColor: 'gray',
+          }}
+        >
+          <Tab.Screen name="Home" component={HomePage} options={{ tabBarLabel: i18n.t('Menu.Home') }} />
+          <Tab.Screen name="Relationship" component={RelationshipPage} options={{ tabBarLabel: i18n.t('Menu.Relationship') }} />
+          <Tab.Screen name="Setting" component={SettingPage} options={{ tabBarLabel: i18n.t('Menu.Setting') }} initialParams={props.screenProps} />
+        </Tab.Navigator>
+      </NavigationContainer>
+    )
 
-            tabBarOptions={{
-              activeTintColor: 'tomato',
-              inactiveTintColor: 'gray',
-            }}
-          >
-            <Tab.Screen name="Home" component={HomePage} options={{ tabBarLabel: i18n.t('Menu.Home') }} />
-            <Tab.Screen name="Relationship" component={RelationshipPage} options={{ tabBarLabel: i18n.t('Menu.Relationship') }} />
-            <Tab.Screen name="Setting" component={SettingPage} options={{ tabBarLabel: i18n.t('Menu.Setting') }} initialParams={screenProps} />
-          </Tab.Navigator>
-        </NavigationContainer>
-      )
-  }
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -150,7 +139,6 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   }
 });
-
 
 const mapStateToProps = (state: any) => {
   const { store } = state

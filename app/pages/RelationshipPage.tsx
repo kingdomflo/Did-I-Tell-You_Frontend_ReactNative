@@ -1,43 +1,27 @@
-import React, { PureComponent } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import i18n from "i18n-js";
 import RelationshipService from "../services/relationship.service";
 import { Relationship } from 'app/models/Relationship';
 
-export interface Props { navigation: any }
-export default class RelationshipPage extends PureComponent<Props> {
-  state = {
-    relationshipList: Array<Relationship>(),
-    isLoading: true,
-    showModal: false
-  }
+export interface Props { navigation: any };
 
-  _unsubscribe: any;
+const RelationshipPage = () => {
 
-  relationshipService: RelationshipService;
+  const [relationshipList, setRelationshipList] = useState([] as Relationship[]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
-  constructor(props: any) {
-    super(props);
-    this.relationshipService = new RelationshipService();
-  }
+  useEffect(() => {
+    console.log('hello relationship page');
+    getAllRelationship();
+  }, []);
 
-  componentDidMount() {
-    this.getAllRelationship();
-    this._unsubscribe = this.props.navigation.addListener('focus', () => {
-      this.getAllRelationship();
-    });
-  }
-
-  componentWillUnmount() {
-    this._unsubscribe();
-  }
-
-  getAllRelationship() {
-    this.relationshipService.getAllRelationship()
+  function getAllRelationship() {
+    const relationshipService = new RelationshipService();
+    relationshipService.getAllRelationship()
       .then((response: any) => {
-        this.setState({
-          relationshipList: response.data
-        });
+        setRelationshipList(response.data)
         console.log('success', response);
       })
       .catch((error: any) => {
@@ -45,31 +29,30 @@ export default class RelationshipPage extends PureComponent<Props> {
       })
       .then(() => {
         console.log("finish");
-        this.setState({
-          isLoading: false
-        });
+        setLoading(false);
       });
   }
 
-  listViewItemSeparator = () => {
+  function listViewItemSeparator() {
     return (
       <View style={styles.relationshipSeparator} />
     );
   };
 
-  render() {
-    return (
-      <View>
+
+  return (
+    <View>
+      {loading ?
+        <Text>Load</Text>
+        :
         <FlatList
-          data={this.state.relationshipList}
-          ItemSeparatorComponent={this.listViewItemSeparator}
+          data={relationshipList}
+          ItemSeparatorComponent={listViewItemSeparator}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => <Text style={styles.relationship}>{item.name}</Text>}
-        />
-      </View>
-    )
-  }
-
+        />}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -85,3 +68,5 @@ const styles = StyleSheet.create({
     paddingTop: 20
   }
 });
+
+export default RelationshipPage;
