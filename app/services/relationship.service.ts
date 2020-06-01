@@ -1,17 +1,13 @@
 import { MOCK_GET_RELATIONSHIPS, MOCK_GET_RELATIONSHIP } from "../mocks/relationship.mock";
 import AsyncStorage from '@react-native-community/async-storage';
 import { openDatabase } from 'react-native-sqlite-storage';
+import { Relationship } from "app/models/Relationship";
 
 export default class RelationshipService {
-  baseUrl: string;
-  mock: any;
+  baseUrl = 'relationship/';
+  mock = process.env.REACT_APP_MOCK;
 
-  constructor() {
-    this.baseUrl = 'relationship/';
-    this.mock = process.env.REACT_APP_MOCK;
-  }
-
-  async getAllRelationship() {
+  static async getAllRelationship() {
     let result;
     let online;
     await AsyncStorage.getItem('online').then(data => {
@@ -48,8 +44,19 @@ export default class RelationshipService {
     return result;
   }
 
-  async getOneRelationship(id: number) {
+  static async getOneRelationship(id: number) {
     // return this.mock ? MOCK_GET_RELATIONSHIP : this.baseService.get(`${this.baseUrl}${id}`);
+  }
+
+  static async postOneRelationship(relationship: Relationship) {
+    const db = await openDatabase({ name: 'Dity.db', location: 'default' });
+
+    await db.transaction((t) => {
+      t.executeSql(
+        'INSERT INTO relationships (name, isSync) VALUES (?, ?)',
+        [relationship.name, false]
+      );
+    });
   }
 
 }

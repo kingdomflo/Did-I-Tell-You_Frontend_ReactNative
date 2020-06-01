@@ -18,8 +18,11 @@ const RelationshipPage = () => {
   }, []);
 
   function getAllRelationship() {
-    const relationshipService = new RelationshipService();
-    relationshipService.getAllRelationship()
+    setLoading(true);
+    // const relationshipService = new RelationshipService();
+    // relationshipService.getAllRelationship();
+
+    RelationshipService.getAllRelationship()
       .then((response: any) => {
         setRelationshipList(response.data)
         console.log('success', response);
@@ -45,12 +48,15 @@ const RelationshipPage = () => {
       {loading ?
         <Text>Load</Text>
         :
-        <FlatList
-          data={relationshipList}
-          ItemSeparatorComponent={listViewItemSeparator}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => <Text style={styles.relationship}>{item.name}</Text>}
-        />}
+        <View>
+          <FlatList
+            data={relationshipList}
+            ItemSeparatorComponent={listViewItemSeparator}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => <Text style={styles.relationship}>{item.name}</Text>}
+          />
+        </View>
+      }
     </View>
   );
 }
